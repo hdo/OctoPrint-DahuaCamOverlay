@@ -7,7 +7,7 @@ This plugin add print status information to Dahua surveillance cameras as text o
 Install via the bundled [Plugin Manager](https://docs.octoprint.org/en/master/bundledplugins/pluginmanager.html)
 or manually using this URL:
 
-    https://github.com/hdo/OctoPrint-DahuaCamOverlay/archive/master.zip
+    https://github.com/hdo/OctoPrint-DahuaCamOverlay/archive/main.zip
 
 
 ## Configuration
