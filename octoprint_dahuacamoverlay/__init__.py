@@ -8,11 +8,14 @@ import re
 from datetime import datetime, timedelta
 import urllib.request
 import urllib.parse
+from urllib.error import URLError, HTTPError
 
 
 BASE_PARAM = '/cgi-bin/configManager.cgi?action=setConfig&VideoWidget[0].CustomTitle[1].Text='
 UPDATE_INTERVAL = 10.0
 SEND_DAHUA = True
+LOG_THRESHOLD = 200
+WAIT_THRESHOLD = 60
 
 
 class DahuaCamOverlayPlugin(octoprint.plugin.StartupPlugin,
@@ -36,15 +39,43 @@ class DahuaCamOverlayPlugin(octoprint.plugin.StartupPlugin,
 		self.print_estimated_print_time = 0.0
 		self.temps = (0,0,0,0) # actual hot end / target hot end / actual bed / target bed
 		self.useM73 = True
+		self.log_info_count = 0
+		self.log_warn_count = 0
+		self.log_error_count = 0
+		self.worker_wait_until = datetime.now() + timedelta(seconds=WAIT_THRESHOLD)
 
+	def log_info(self, message):
+		self.log_info_count += 1
+		if self.log_info_count < LOG_THRESHOLD:
+			self._logger.info(message)
 
+	def log_warn(self, message):
+		self.log_warn_count += 1
+		if self.log_warn_count < LOG_THRESHOLD:
+			self._logger.warn(message)
+
+	def log_error(self, message):
+		self.log_error_count += 1
+		if self.log_error_count < LOG_THRESHOLD:
+			self._logger.error(message)
 
 	def send_to_dahua(self, data):
 		url = self.base_url + data
-		self._logger.debug(url)		
 		if SEND_DAHUA:
-			res = urllib.request.urlopen(url, timeout=5)
-			res_body = res.read()
+			try:
+				self.log_info(url)		
+				res = urllib.request.urlopen(url, timeout=5)
+				res_body = res.read()
+				self.log_info("Response: %s" % res_body.decode('utf-8'))
+			
+			except HTTPError as e:
+				self.log_error("HTTPError with code %d" % e.code)
+
+			except URLError as e:
+				self.log_error("URLError with reason %s" % e.reason)
+			except:
+				self.log_error("Error sending overlay!")
+
 
 	def update_overlay(self):
 		self.last_update = datetime.now()
@@ -120,6 +151,10 @@ class DahuaCamOverlayPlugin(octoprint.plugin.StartupPlugin,
 
 
 	def _worker(self):
+		if datetime.now() < self.worker_wait_until:
+			self._logger.info("waiting ...")
+			return
+
 		self.print_state = self._printer.get_state_string()
 		current_job = self._printer.get_current_job()
 		current_temps = self._printer.get_current_temperatures()
@@ -160,6 +195,8 @@ class DahuaCamOverlayPlugin(octoprint.plugin.StartupPlugin,
 		self.init_http_auth(self.base_url, user, password)
 		self.timer = octoprint.util.RepeatedTimer(UPDATE_INTERVAL, self._worker)
 		self.timer.start()
+		self.print_name = "BOOT: %s" % datetime.now().strftime("%y-%m-%d %H:%M")
+		self._logger.info(self.print_name)
 
 
 	def on_after_startup(self):
