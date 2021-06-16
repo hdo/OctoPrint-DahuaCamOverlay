@@ -237,7 +237,7 @@ class DahuaCamOverlayPlugin(octoprint.plugin.StartupPlugin,
 
 
 __plugin_name__ = "Dahua Cam Overlay Plugin"
-__plugin_pythoncompat__ = ">=2.7,<4" # python 2 and 3
+__plugin_pythoncompat__ = ">=3,<4" # python 2 and 3
 
 def __plugin_load__():
 	global __plugin_implementation__
