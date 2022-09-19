@@ -86,7 +86,8 @@ class DahuaCamOverlayPlugin(octoprint.plugin.StartupPlugin,
 		#self._logger.info("temps: %d/%d - %d/%d" % self.temps)
 		#self._logger.info("print time: %d" % self.print_duration)
 		td = timedelta(minutes=self.progress_remaining_minutes)
-		ps = ""
+        finish_time = self.last_update + td      
+        ps = finish_time.strftime('%Y-%m-%d %H:%M')        
 		
 		if self.print_started:
 			ps = self.print_started.strftime("%Y-%m-%d %H:%M:%S") 
