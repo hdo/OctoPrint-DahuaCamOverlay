@@ -11,6 +11,10 @@ import urllib.parse
 from urllib.error import URLError, HTTPError
 
 
+__plugin_name__ = "Dahua Cam Overlay Plugin"
+__plugin_pythoncompat__ = ">=2.7,<4"
+
+
 BASE_PARAM = '/cgi-bin/configManager.cgi?action=setConfig&VideoWidget[0].CustomTitle[1].Text='
 UPDATE_INTERVAL = 10.0
 SEND_DAHUA = True
@@ -238,7 +242,7 @@ class DahuaCamOverlayPlugin(octoprint.plugin.StartupPlugin,
 
 
 __plugin_name__ = "Dahua Cam Overlay Plugin"
-__plugin_pythoncompat__ = ">=3.7,<4"
+__plugin_pythoncompat__ = ">=2.7,<4"
 
 def __plugin_load__():
 	global __plugin_implementation__
